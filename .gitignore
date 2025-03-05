@@ -1,0 +1,15 @@
+backend-go-common
+debug
+vendor
+.vscode/launch.json
+.idea
+.ssh
+*.tmp.*
+*DS_store*
+.vscode
+private.pem
+public.pem
+.env
+__debug_*
+key*.json
+.output
