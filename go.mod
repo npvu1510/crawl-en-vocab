@@ -3,6 +3,8 @@ module github.com/npvu1510/crawl-en-vocab
 go 1.24.0
 
 require (
+	github.com/PuerkitoBio/goquery v1.10.2 // indirect
+	github.com/andybalholm/cascadia v1.3.3 // indirect
 	github.com/caarlos0/env v3.5.0+incompatible // indirect
 	github.com/caarlos0/env/v11 v11.3.1 // indirect
 	github.com/caarlos0/env/v6 v6.10.1 // indirect
@@ -22,6 +24,7 @@ require (
 	go.uber.org/multierr v1.10.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
 	golang.org/x/crypto v0.35.0 // indirect
+	golang.org/x/net v0.35.0 // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
 	golang.org/x/text v0.23.0 // indirect

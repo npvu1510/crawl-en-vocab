@@ -32,5 +32,11 @@ func Migrations(db *gorm.DB) *gormigrate.Gormigrate {
 				return db.AutoMigrate(&model.Category{})
 			},
 		},
+		{
+			ID: "Upgrade dictionary and category models (field-level perrmissions, size, index, ...)",
+			Migrate: func(db *gorm.DB) error {
+				return db.AutoMigrate(&model.Dictionary{}, &model.Category{})
+			},
+		},
 	})
 }

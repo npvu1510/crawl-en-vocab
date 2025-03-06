@@ -4,20 +4,32 @@ import "gorm.io/gorm"
 
 // import "fmt"
 
-type Dictionary struct {
-	Id         int        `gorm:"column:id;primaryKey" json:"id"`
-	Definition string     `gorm:"column:definition" json:"definition"`
-	Categories []Category `gorm:"many2many:dictionaries_categories" json:"categories"`
-	Image      string     `gorm:"column:image" json:"image"`
-	AudioGB    string     `gorm:"column:audio_gb" json:"audio_gb"`
-	AudioUS    string     `gorm:"column:audio_us" json:"audio_us"`
+// type Dictionary struct {
+// 	Id         int        `gorm:"column:id;primaryKey" json:"id"`
+// 	Definition string     `gorm:"column:definition" json:"definition"`
+// 	Categories []Category `gorm:"many2many:dictionaries_categories" json:"categories"`
+// 	Image      string     `gorm:"column:image" json:"image"`
+// 	AudioGB    string     `gorm:"column:audio_gb" json:"audio_gb"`
+// 	AudioUS    string     `gorm:"column:audio_us" json:"audio_us"`
 
+// 	gorm.Model
+// }
+
+type Dictionary struct {
+	ID         uint   `gorm:"column:id;primaryKey;<-:create" json:"id"`
+	Definition string `gorm:"column:definition;size:50;not null;index" json:"definition"`
+	Image      string `gorm:"column:image;size:255" json:"image"`
+	AudioGB    string `gorm:"column:audio_gb;size:255" json:"audio_gb"`
+	AudioUS    string `gorm:"column:audio_us;size:255" json:"audio_us"`
+	Source     string `gorm:"size:255;not null;<-:create" json:"source"`
+
+	Categories []Category `gorm:"many2many:dictionaries_categories"`
 	gorm.Model
 }
 
 // CONSTRUCTOR
-func NewDictionary(definition string, categories []Category, img string) *Dictionary {
-	return &Dictionary{Definition: definition, Categories: categories, Image: img}
+func NewDictionary(definition string, categories []Category) *Dictionary {
+	return &Dictionary{Definition: definition, Categories: categories}
 }
 
 // // METHODS

@@ -9,6 +9,9 @@ import (
 type Category struct {
 	Id   int    `gorm:"column:id;primaryKey" json:"id"`
 	Name string `gorm:"column:name" json:"name"`
+
+	Dictionaries []Dictionary `gorm:"many2many:dictionaries_categories"`
+
 	gorm.Model
 }
 

@@ -9,6 +9,11 @@ import (
 )
 
 type Config struct {
+	EMOJI_FLASHCARD struct {
+		CRAWLING_URL           string `env:"EMOJI_FLASHCARD_CRAWLING_URL"`
+		DITCTIONARY_BATCH_SIZE int    `env:"EMOJI_FLASHCARD_DITCTIONARY_BATCH_SIZE" envDefault:"18"`
+		WORKER_NUM             int    `env:"EMOJI_FLASHCARD_WORKER_NUM" envDefault:"10"`
+	}
 	Postgres struct {
 		Host     string `env:"POSTGRES_HOST" envDefault:"localhost"`
 		Port     int    `env:"POSTGRES_PORT" envDefault:"5432"`
