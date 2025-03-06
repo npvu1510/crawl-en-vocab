@@ -20,11 +20,6 @@ import (
 	"go.uber.org/fx"
 )
 
-const VocabTask = "vocab"
-const TypeVocabGBTask = "vocab:gb:chatgpt"
-const TypeVocabUSTask = "vocab:us:chatgpt"
-const TypeVocabMeanTask = "vocab:mean:chatgpt"
-
 var CrawlEfcCmd = &cobra.Command{
 	Use:   "crawl-efc",
 	Short: "Crawl English Flashcards",
@@ -140,7 +135,7 @@ func getCategoryMap(db *gorm.DB) map[int]model.Category {
 	return categoryMap
 }
 
-func element2Dictionary(itemElement *goquery.Selection, categoryMap map[int]model.Category) *model.Dictionary {
+func element2Dictionary(source string, itemElement *goquery.Selection, categoryMap map[int]model.Category) *model.Dictionary {
 	// PARSE IDS STRING
 	idsStr, isExist := itemElement.Attr("data-collection-ids")
 	if !isExist {
@@ -167,10 +162,13 @@ func element2Dictionary(itemElement *goquery.Selection, categoryMap map[int]mode
 	// DEFINITION
 	definition := itemElement.Find(".definition").Text()
 
-	dictonary := model.NewDictionary(definition, categories)
+	// IMG SRC
+	imgSrc, _ := itemElement.Find("img").Attr("src")
+
+	dictonary := model.NewDictionary(definition, categories, imgSrc, source)
 	return dictonary
 }
-func getDictionaries(document *goquery.Document, workerNum int, batchSize int, db *gorm.DB, dictionaryService service.IDictionaryService) {
+func getDictionaries(document *goquery.Document, source string, workerNum int, batchSize int, db *gorm.DB, dictionaryService service.IDictionaryService) {
 	// Get categories Ids
 	categoryMap := getCategoryMap(db)
 
@@ -195,7 +193,7 @@ func getDictionaries(document *goquery.Document, workerNum int, batchSize int, d
 				// ################### CRAWLING ###################
 				fmt.Printf("🔃 Worker %v: DICTIONARY...\n", workerId)
 
-				dictionary := element2Dictionary(element, categoryMap)
+				dictionary := element2Dictionary(source, element, categoryMap)
 				if dictionary == nil {
 					continue
 				}
@@ -239,9 +237,9 @@ func getDictionaries(document *goquery.Document, workerNum int, batchSize int, d
 }
 
 func startCrawling(conf *config.Config, db *gorm.DB, categoryService service.ICategoryService, dictionaryService service.IDictionaryService) {
-	crawlingUrl := conf.EMOJI_FLASHCARD.CRAWLING_URL
+	crawlingUrl, crawlingSrc := conf.Emoji_Flashcard.CRAWLING_URL, conf.Emoji_Flashcard.SOURCE
 
-	workerNum, dictionary_batch_size := conf.EMOJI_FLASHCARD.WORKER_NUM, conf.EMOJI_FLASHCARD.DITCTIONARY_BATCH_SIZE
+	workerNum, dictionary_batch_size := conf.Emoji_Flashcard.WORKER_NUM, conf.Emoji_Flashcard.DITCTIONARY_BATCH_SIZE
 
 	// GET page document
 	document := getPageDocument(crawlingUrl)
@@ -250,5 +248,5 @@ func startCrawling(conf *config.Config, db *gorm.DB, categoryService service.ICa
 	getCategories(document, workerNum, categoryService)
 
 	// GET Dictionaries
-	getDictionaries(document, workerNum, dictionary_batch_size, db, dictionaryService)
+	getDictionaries(document, crawlingSrc, workerNum, dictionary_batch_size, db, dictionaryService)
 }

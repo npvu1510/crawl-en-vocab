@@ -28,8 +28,8 @@ type Dictionary struct {
 }
 
 // CONSTRUCTOR
-func NewDictionary(definition string, categories []Category) *Dictionary {
-	return &Dictionary{Definition: definition, Categories: categories}
+func NewDictionary(definition string, categories []Category, imgSrc string, source string) *Dictionary {
+	return &Dictionary{Definition: definition, Categories: categories, Image: imgSrc, Source: source}
 }
 
 // // METHODS

@@ -8,6 +8,7 @@ import (
 type IDictionaryRepository interface {
 	Create(entity *model.Dictionary) error
 	CreateMany(entities []*model.Dictionary, batchSize int) error
+	GetAll() ([]*model.Dictionary, error)
 }
 
 type DictionaryRepository struct {
@@ -24,4 +25,11 @@ func (d *DictionaryRepository) Create(entity *model.Dictionary) error {
 
 func (d *DictionaryRepository) CreateMany(entities []*model.Dictionary, batchSize int) error {
 	return d.db.CreateInBatches(entities, batchSize).Error
+}
+
+func (d *DictionaryRepository) GetAll() ([]*model.Dictionary, error) {
+	var dictionaries []*model.Dictionary
+	err := d.db.Find(&dictionaries).Error
+
+	return dictionaries, err
 }

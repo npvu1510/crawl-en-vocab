@@ -9,10 +9,16 @@ import (
 )
 
 type Config struct {
-	EMOJI_FLASHCARD struct {
+	App struct {
+		LOCAL_IMAGE_PATH string `env:"LOCAL_IMAGE_PATH"`
+		LOCAL_AUDIO_PATH string `env:"LOCAL_AUDIO_PATH"`
+	}
+
+	Emoji_Flashcard struct {
 		CRAWLING_URL           string `env:"EMOJI_FLASHCARD_CRAWLING_URL"`
 		DITCTIONARY_BATCH_SIZE int    `env:"EMOJI_FLASHCARD_DITCTIONARY_BATCH_SIZE" envDefault:"18"`
 		WORKER_NUM             int    `env:"EMOJI_FLASHCARD_WORKER_NUM" envDefault:"10"`
+		SOURCE                 string `env:"EMOJI_FLASHCARD_SRC" envDefault:"EMOJI_FLASHCARD_SRC"`
 	}
 	Postgres struct {
 		Host     string `env:"POSTGRES_HOST" envDefault:"localhost"`

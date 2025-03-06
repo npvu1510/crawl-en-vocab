@@ -8,6 +8,7 @@ import (
 type IDictionaryService interface {
 	CreateDictionary(entity *model.Dictionary) error
 	CreateDictionaries(entities []*model.Dictionary, batchSize int) error
+	GetDictionaries() ([]*model.Dictionary, error)
 }
 
 type DictionaryService struct {
@@ -23,4 +24,8 @@ func (d *DictionaryService) CreateDictionary(entity *model.Dictionary) error {
 }
 func (d *DictionaryService) CreateDictionaries(entities []*model.Dictionary, batchSize int) error {
 	return d.repo.CreateMany(entities, batchSize)
+}
+
+func (d *DictionaryService) GetDictionaries() ([]*model.Dictionary, error) {
+	return d.repo.GetAll()
 }

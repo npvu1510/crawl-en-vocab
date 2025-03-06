@@ -13,3 +13,6 @@ public.pem
 __debug_*
 key*.json
 .output
+
+service-account-*.json
+/storage
