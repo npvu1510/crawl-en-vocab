@@ -6,6 +6,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/npvu1510/crawl-en-vocab/cmd/crawl"
 	"github.com/spf13/cobra"
 )
 
@@ -21,7 +22,7 @@ var rootCmd = &cobra.Command{
 // This is called by main.main(). It only needs to happen once to the rootCmd.
 func Execute() {
 	rootCmd.AddCommand(
-		CrawlEfcCmd,
+		crawl.CrawlEfcCmd,
 	)
 	err := rootCmd.Execute()
 	if err != nil {

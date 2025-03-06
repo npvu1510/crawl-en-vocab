@@ -5,6 +5,7 @@ import (
 
 	"github.com/npvu1510/crawl-en-vocab/pkg/config"
 	"go.uber.org/fx"
+	"gorm.io/gorm"
 )
 
 func Invoke(invokers ...interface{}) *fx.App {
@@ -17,6 +18,7 @@ func Invoke(invokers ...interface{}) *fx.App {
 
 		fx.Supply(conf),
 		fx.Invoke(invokers...),
+		fx.Invoke(func(db *gorm.DB) {}),
 	)
 
 	return app

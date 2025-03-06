@@ -1,4 +1,4 @@
-package cmd
+package crawl
 
 import (
 	"context"
@@ -18,7 +18,7 @@ const TypeVocabMeanTask = "vocab:mean:chatgpt"
 
 var CrawlEfcCmd = &cobra.Command{
 	Use:   "crawl-efc",
-	Short: "",
+	Short: "Crawl English Flashcards",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		return internal.Invoke(crawlEfcCmd).Start(context.Background())
 	},

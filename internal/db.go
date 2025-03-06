@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/npvu1510/crawl-en-vocab/internal/migration"
 	"github.com/npvu1510/crawl-en-vocab/pkg/config"
 	"go.uber.org/fx"
 
@@ -12,7 +13,6 @@ import (
 )
 
 func newDatabaseConnection(lc fx.Lifecycle, config *config.Config) *gorm.DB {
-	fmt.Println("NewDatabaseConnection")
 	host := config.Postgres.Host
 	port := config.Postgres.Port
 	user := config.Postgres.User
@@ -25,9 +25,15 @@ func newDatabaseConnection(lc fx.Lifecycle, config *config.Config) *gorm.DB {
 		panic("Failed to connect to database!\n")
 	}
 
+	// Migrate
+	migrator := migration.Migrations(db)
+	if err := migrator.Migrate(); err != nil {
+		panic(fmt.Sprintf("Migration failed: %v", err))
+	}
+
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
-			fmt.Println("Connecting to database...")
+			fmt.Println("Connected to database successfully!")
 			return nil
 		},
 		OnStop: func(ctx context.Context) error {
@@ -41,6 +47,5 @@ func newDatabaseConnection(lc fx.Lifecycle, config *config.Config) *gorm.DB {
 		},
 	})
 
-	fmt.Println("Connected to database successfully!")
 	return db
 }
