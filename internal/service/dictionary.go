@@ -9,6 +9,7 @@ type IDictionaryService interface {
 	CreateDictionary(entity *model.Dictionary) error
 	CreateDictionaries(entities []*model.Dictionary, batchSize int) error
 	GetDictionaries() ([]*model.Dictionary, error)
+	UpdateImage(dictionary *model.Dictionary, imgSrc string) error
 }
 
 type DictionaryService struct {
@@ -28,4 +29,8 @@ func (d *DictionaryService) CreateDictionaries(entities []*model.Dictionary, bat
 
 func (d *DictionaryService) GetDictionaries() ([]*model.Dictionary, error) {
 	return d.repo.GetAll()
+}
+
+func (d *DictionaryService) UpdateImage(dictionary *model.Dictionary, imgSrc string) error {
+	return d.repo.Update(dictionary, "image", imgSrc)
 }

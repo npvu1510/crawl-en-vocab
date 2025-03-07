@@ -9,6 +9,7 @@ type IDictionaryRepository interface {
 	Create(entity *model.Dictionary) error
 	CreateMany(entities []*model.Dictionary, batchSize int) error
 	GetAll() ([]*model.Dictionary, error)
+	Update(dictionary *model.Dictionary, column string, value any) error
 }
 
 type DictionaryRepository struct {
@@ -32,4 +33,8 @@ func (d *DictionaryRepository) GetAll() ([]*model.Dictionary, error) {
 	err := d.db.Find(&dictionaries).Error
 
 	return dictionaries, err
+}
+
+func (d *DictionaryRepository) Update(dictionary *model.Dictionary, column string, value any) error {
+	return d.db.Model(&dictionary).Update(column, value).Error
 }

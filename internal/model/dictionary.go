@@ -16,7 +16,7 @@ import "gorm.io/gorm"
 // }
 
 type Dictionary struct {
-	ID         uint   `gorm:"column:id;primaryKey;<-:create" json:"id"`
+	Id         uint   `gorm:"column:id;primaryKey;<-:create" json:"id"`
 	Definition string `gorm:"column:definition;size:50;not null;index" json:"definition"`
 	Image      string `gorm:"column:image;size:255" json:"image"`
 	AudioGB    string `gorm:"column:audio_gb;size:255" json:"audio_gb"`

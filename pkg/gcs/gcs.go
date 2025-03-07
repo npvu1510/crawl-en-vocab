@@ -1,4 +1,4 @@
-package uploader
+package gcs
 
 import (
 	"bytes"
@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"cloud.google.com/go/storage"
+	"github.com/npvu1510/crawl-en-vocab/pkg/utils"
 	"google.golang.org/api/option"
 )
 
@@ -36,18 +37,16 @@ var (
 
 func init() {
 	once.Do(func() {
-		os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "") // FILL IN WITH YOUR FILE PATH
+		// os.Setenv("GOOGLE_APPLICATION_CREDENTIALS", "") // FILL IN WITH YOUR FILE PATH
 		client, err := storage.NewClient(context.Background(), option.WithCredentialsFile(GCS_SERVICE_ACCOUNT_PATH))
-		if err != nil {
-			fmt.Errorf("failed to create client: %v", err)
-		}
+		utils.CheckError(err)
 		defer client.Close()
 
 		Service = &ClientUploader{
 			cl:         client,
 			bucketName: BUCKET_NAME,
 			projectID:  PROJECT_ID,
-			uploadPath: "public/npvu1510/",
+			uploadPath: "public/npvu1510",
 		}
 
 	})
@@ -95,14 +94,14 @@ func (c *ClientUploader) UploadBlob(file []byte, object string) error {
 	return nil
 }
 
-func (c *ClientUploader) UploadFile(filePath string, object string) error {
+func (c *ClientUploader) UploadFile(filePath string, object string) (string, error) {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
 	defer cancel()
 
 	file, err := os.Open(filePath)
 	if err != nil {
-		return fmt.Errorf("UploadFile Open failed: %w", err)
+		return "", fmt.Errorf("UploadFile Open failed: %w", err)
 	}
 	defer file.Close()
 
@@ -118,12 +117,13 @@ func (c *ClientUploader) UploadFile(filePath string, object string) error {
 	wc.ContentType = mimeType // Đặt Content-Type chính xác
 
 	if _, err := io.Copy(wc, file); err != nil {
-		return fmt.Errorf("UploadFile Copy failed: %v", err)
+		return "", fmt.Errorf("UploadFile Copy failed: %v", err)
 	}
 	if err := wc.Close(); err != nil {
-		return fmt.Errorf("UploadFile Close failed: %v", err)
+		return "", fmt.Errorf("UploadFile Close failed: %v", err)
 	}
+	fmt.Printf("✅ Uploaded successfully: %s (Content-Type: %s)\n", object, mimeType)
 
-	fmt.Printf("Uploaded successfully: %s (Content-Type: %s)\n", object, mimeType)
-	return nil
+	publicURL := fmt.Sprintf("https://storage.googleapis.com/%s/%s", c.bucketName, c.uploadPath+object)
+	return publicURL, nil
 }

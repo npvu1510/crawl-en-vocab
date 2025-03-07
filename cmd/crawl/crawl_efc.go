@@ -239,7 +239,7 @@ func getDictionaries(document *goquery.Document, source string, workerNum int, b
 func startCrawling(conf *config.Config, db *gorm.DB, categoryService service.ICategoryService, dictionaryService service.IDictionaryService) {
 	crawlingUrl, crawlingSrc := conf.Emoji_Flashcard.CRAWLING_URL, conf.Emoji_Flashcard.SOURCE
 
-	workerNum, dictionary_batch_size := conf.Emoji_Flashcard.WORKER_NUM, conf.Emoji_Flashcard.DITCTIONARY_BATCH_SIZE
+	workerNum, dictionary_batch_size := conf.Emoji_Flashcard.WORKER_NUM, conf.Emoji_Flashcard.DITCTIONARY_INSERT_BATCH_SIZE
 
 	// GET page document
 	document := getPageDocument(crawlingUrl)

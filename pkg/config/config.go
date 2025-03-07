@@ -15,10 +15,11 @@ type Config struct {
 	}
 
 	Emoji_Flashcard struct {
-		CRAWLING_URL           string `env:"EMOJI_FLASHCARD_CRAWLING_URL"`
-		DITCTIONARY_BATCH_SIZE int    `env:"EMOJI_FLASHCARD_DITCTIONARY_BATCH_SIZE" envDefault:"18"`
-		WORKER_NUM             int    `env:"EMOJI_FLASHCARD_WORKER_NUM" envDefault:"10"`
-		SOURCE                 string `env:"EMOJI_FLASHCARD_SRC" envDefault:"EMOJI_FLASHCARD_SRC"`
+		CRAWLING_URL                   string `env:"EMOJI_FLASHCARD_CRAWLING_URL"`
+		DITCTIONARY_INSERT_BATCH_SIZE  int    `env:"EMOJI_FLASHCARD_DITCTIONARY_INSERT_BATCH_SIZE" envDefault:"10"`
+		DITCTIONARY_PUBLISH_BATCH_SIZE int    `env:"EMOJI_FLASHCARD_DITCTIONARY_PUBLISH_BATCH_SIZE" envDefault:"5"`
+		WORKER_NUM                     int    `env:"EMOJI_FLASHCARD_WORKER_NUM" envDefault:"10"`
+		SOURCE                         string `env:"EMOJI_FLASHCARD_SRC" envDefault:"EMOJI_FLASHCARD_SRC"`
 	}
 	Postgres struct {
 		Host     string `env:"POSTGRES_HOST" envDefault:"localhost"`
@@ -34,7 +35,6 @@ type Config struct {
 }
 
 func init() {
-	fmt.Println("INIT...")
 	if err := godotenv.Load(".env"); err != nil {
 		panic(fmt.Sprintf("Error while loading .env file: %v", err))
 	}
@@ -48,8 +48,6 @@ var (
 )
 
 func Load() Config {
-	fmt.Println("LOAD...")
-
 	var conf Config
 	// log := logger.Get()
 	once.Do(func() {
@@ -63,7 +61,6 @@ func Load() Config {
 }
 
 func MustLoad() *Config {
-	fmt.Println("MUSTLOAD...")
 	lock.Lock()
 	defer lock.Unlock()
 	if config != nil {

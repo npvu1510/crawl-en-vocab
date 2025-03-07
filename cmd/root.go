@@ -6,6 +6,7 @@ package cmd
 import (
 	"os"
 
+	"github.com/npvu1510/crawl-en-vocab/cmd/consumer"
 	"github.com/npvu1510/crawl-en-vocab/cmd/crawl"
 	"github.com/npvu1510/crawl-en-vocab/cmd/publisher"
 	"github.com/spf13/cobra"
@@ -25,10 +26,15 @@ func Execute() {
 	rootCmd.AddCommand(
 		// Crawl
 		crawl.CrawlEfcCmd,
+
 		// Publisher
 		publisher.VocabImagePublisherCmd,
 
 		// Cónumer
+		consumer.VocabImageConsumerCmd,
+
+		// Others
+		ClearTasksCmd,
 	)
 	err := rootCmd.Execute()
 	if err != nil {
