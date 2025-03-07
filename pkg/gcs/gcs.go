@@ -23,15 +23,15 @@ const (
 	GCS_SERVICE_ACCOUNT_PATH = "service-account-gcs.json"
 )
 
-type ClientUploader struct {
-	cl         *storage.Client
+type GCSService struct {
+	client     *storage.Client
 	projectID  string
 	bucketName string
 	uploadPath string
 }
 
 var (
-	Service *ClientUploader
+	Service *GCSService
 	once    sync.Once
 )
 
@@ -42,8 +42,8 @@ func init() {
 		utils.CheckError(err)
 		defer client.Close()
 
-		Service = &ClientUploader{
-			cl:         client,
+		Service = &GCSService{
+			client:     client,
 			bucketName: BUCKET_NAME,
 			projectID:  PROJECT_ID,
 			uploadPath: "public/npvu1510",
@@ -52,23 +52,22 @@ func init() {
 	})
 }
 
-func (c *ClientUploader) Close() {
+func GetClient() *storage.Client {
+	return Service.client
+}
+
+func (c *GCSService) Close() {
 	if Service != nil {
-		Service.cl.Close()
+		Service.client.Close()
 	}
 }
 
-func GetClient() *storage.Client {
-	return Service.cl
-}
-
-func SetBucketPath(path string) *ClientUploader {
-	Service.uploadPath = path
-	return Service
+func (g *GCSService) SetBucketPath(path string) {
+	g.uploadPath = path
 }
 
 // UploadFile uploads an object
-func (c *ClientUploader) UploadBlob(file []byte, object string) error {
+func (c *GCSService) UploadBlob(file []byte, filename string) (string, error) {
 	ctx := context.Background()
 
 	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
@@ -76,25 +75,34 @@ func (c *ClientUploader) UploadBlob(file []byte, object string) error {
 
 	// file, err := os.Open(filePath)
 	// if err != nil {
-	// 	return fmt.Errorf("UploadFile Open failed: %w", err)
+	// 	return "",fmt.Errorf("UploadFile Open failed: %w", err)
 	// }
 	// defer file.Close()
 
 	buf := bytes.NewBuffer(file)
 
+	ext := filepath.Ext(filename)
+	mimeType := mime.TypeByExtension(ext)
+	if mimeType == "" {
+		mimeType = "application/octet-stream"
+	}
+
 	// Upload an object with storage.Writer.
-	wc := c.cl.Bucket(c.bucketName).Object(c.uploadPath + object).NewWriter(ctx)
+	fullFilePath := c.uploadPath + "/" + filename
+	wc := c.client.Bucket(c.bucketName).Object(fullFilePath).NewWriter(ctx)
+	wc.ContentType = mimeType
 	if _, err := io.Copy(wc, buf); err != nil {
-		return fmt.Errorf("UploadBlob Copy failed: %v", err)
+		return "", fmt.Errorf("UploadBlob Copy failed: %v", err)
 	}
 	if err := wc.Close(); err != nil {
-		return fmt.Errorf("UploadBlob Close failed: %v", err)
+		return "", fmt.Errorf("UploadBlob Close failed: %v", err)
 	}
 
-	return nil
+	publicURL := fmt.Sprintf("https://storage.googleapis.com/%s/%s", c.bucketName, fullFilePath)
+	return publicURL, nil
 }
 
-func (c *ClientUploader) UploadFile(filePath string, object string) (string, error) {
+func (c *GCSService) UploadFile(filePath string, filename string) (string, error) {
 	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
 	defer cancel()
@@ -105,7 +113,6 @@ func (c *ClientUploader) UploadFile(filePath string, object string) (string, err
 	}
 	defer file.Close()
 
-	// Tự động nhận diện Content-Type dựa trên phần mở rộng của file
 	ext := filepath.Ext(filePath)
 	mimeType := mime.TypeByExtension(ext)
 	if mimeType == "" {
@@ -113,7 +120,8 @@ func (c *ClientUploader) UploadFile(filePath string, object string) (string, err
 	}
 
 	// Tạo writer và đặt Content-Type
-	wc := c.cl.Bucket(c.bucketName).Object(c.uploadPath + object).NewWriter(ctx)
+	fullFilePath := c.uploadPath + "/" + filename
+	wc := c.client.Bucket(c.bucketName).Object(fullFilePath).NewWriter(ctx)
 	wc.ContentType = mimeType // Đặt Content-Type chính xác
 
 	if _, err := io.Copy(wc, file); err != nil {
@@ -122,8 +130,8 @@ func (c *ClientUploader) UploadFile(filePath string, object string) (string, err
 	if err := wc.Close(); err != nil {
 		return "", fmt.Errorf("UploadFile Close failed: %v", err)
 	}
-	fmt.Printf("✅ Uploaded successfully: %s (Content-Type: %s)\n", object, mimeType)
+	fmt.Printf("✅ Uploaded successfully: %s (Content-Type: %s)\n", fullFilePath, mimeType)
 
-	publicURL := fmt.Sprintf("https://storage.googleapis.com/%s/%s", c.bucketName, c.uploadPath+object)
+	publicURL := fmt.Sprintf("https://storage.googleapis.com/%s/%s", c.bucketName, fullFilePath)
 	return publicURL, nil
 }

@@ -9,6 +9,7 @@ import (
 
 	"github.com/hibiken/asynq"
 	"github.com/jinzhu/copier"
+
 	"github.com/npvu1510/crawl-en-vocab/internal"
 	"github.com/npvu1510/crawl-en-vocab/internal/model"
 	"github.com/npvu1510/crawl-en-vocab/internal/service"
@@ -26,8 +27,8 @@ const (
 )
 
 var VocabImagePublisherCmd = &cobra.Command{
-	Use:   "cronjob",
-	Short: "Chạy cron job định kỳ",
+	Use:   "vocab-image-pub",
+	Short: "vocab-image-pub",
 	Run: func(cmd *cobra.Command, args []string) {
 		internal.Invoke(vocabImagePublisherCmd).Run()
 	},
@@ -40,7 +41,7 @@ func vocabImagePublisherCmd(lc fx.Lifecycle, conf *config.Config, dictionaryServ
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			fmt.Println("✅ Cron job vocab-image started")
-			_, err := c.AddFunc("*/10 * * * * *", func() {
+			_, err := c.AddFunc("*/15 * * * * *", func() {
 				err := scanVocabImageDb(conf, dictionaryService)
 				utils.CheckError(err)
 			})
@@ -58,8 +59,14 @@ func vocabImagePublisherCmd(lc fx.Lifecycle, conf *config.Config, dictionaryServ
 }
 
 func scanVocabImageDb(conf *config.Config, dictionaryService service.IDictionaryService) error {
-	dictionaries, err := dictionaryService.GetDictionaries()
+	dictionaries, err := dictionaryService.GetDictionaries("", true, false, 1, 9)
 	utils.CheckError(err)
+
+	// fmt.Printf("Size: %v\n", len(dictionaries))
+
+	// for _, d := range dictionaries {
+	// 	fmt.Println(d)
+	// }
 
 	// CREATE NEW TASKS
 	newTasks := make([]*asynq.Task, 0)
@@ -78,20 +85,19 @@ func scanVocabImageDb(conf *config.Config, dictionaryService service.IDictionary
 	// ENQUEUE TASKS
 	publisher := asynqueue.GetClient()
 
-	batchSize := conf.Emoji_Flashcard.DITCTIONARY_PUBLISH_BATCH_SIZE
+	// batchSize := conf.Emoji_Flashcard.DITCTIONARY_PUBLISH_BATCH_SIZE
 	for idx, t := range newTasks {
 		recordId := dictionaries[idx].Id
 		taskId := fmt.Sprintf("%v%v", VocabImageTaskName, recordId)
 
-		// fmt.Println(VocabImageTaskName)
-		// fmt.Println(recordId)
-
-		batchIdx := idx/batchSize + 1
-		delayMinute := time.Duration(batchIdx)
+		// batchIdx := idx/batchSize + 1
+		// delayMinute := time.Duration(batchIdx)
 
 		_, err := publisher.Enqueue(t,
 			asynq.TaskID(taskId),
-			asynq.ProcessIn(delayMinute*time.Minute),
+			asynq.Queue(conf.Asynq.IMAGE_QUEUE_NAME),
+			// asynq.ProcessIn(delayMinute*time.Minute),
+			asynq.ProcessIn(10*time.Second),
 			asynq.MaxRetry(2),
 			asynq.Timeout(90*time.Second))
 

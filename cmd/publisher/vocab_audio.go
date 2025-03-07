@@ -26,7 +26,7 @@ const (
 )
 
 var VocabAudioPublisherCmd = &cobra.Command{
-	Use:   "cronjob",
+	Use:   "vocab-audio-pub",
 	Short: "Chạy cron job định kỳ",
 	Run: func(cmd *cobra.Command, args []string) {
 		internal.Invoke(vocabAudioPublisherCmd).Run()
@@ -40,7 +40,7 @@ func vocabAudioPublisherCmd(lc fx.Lifecycle, conf *config.Config, dictionaryServ
 	lc.Append(fx.Hook{
 		OnStart: func(ctx context.Context) error {
 			fmt.Println("✅ Cron job vocab-audio started")
-			_, err := c.AddFunc("*/10 * * * * *", func() {
+			_, err := c.AddFunc("*/15 * * * * *", func() {
 				err := scanVocabAudioDb(conf, dictionaryService)
 				utils.CheckError(err)
 			})
@@ -58,7 +58,7 @@ func vocabAudioPublisherCmd(lc fx.Lifecycle, conf *config.Config, dictionaryServ
 }
 
 func scanVocabAudioDb(conf *config.Config, dictionaryService service.IDictionaryService) error {
-	dictionaries, err := dictionaryService.GetDictionaries()
+	dictionaries, err := dictionaryService.GetDictionaries("", false, true, 1, 9)
 	utils.CheckError(err)
 
 	// CREATE NEW TASKS
@@ -78,20 +78,19 @@ func scanVocabAudioDb(conf *config.Config, dictionaryService service.IDictionary
 	// ENQUEUE TASKS
 	publisher := asynqueue.GetClient()
 
-	batchSize := conf.Emoji_Flashcard.DITCTIONARY_PUBLISH_BATCH_SIZE
+	// batchSize := conf.Emoji_Flashcard.DITCTIONARY_PUBLISH_BATCH_SIZE
 	for idx, t := range newTasks {
 		recordId := dictionaries[idx].Id
 		taskId := fmt.Sprintf("%v%v", VocabAudioTaskName, recordId)
 
-		// fmt.Println(VocabAudioTaskName)
-		// fmt.Println(recordId)
-
-		batchIdx := idx/batchSize + 1
-		delayMinute := time.Duration(batchIdx)
+		// batchIdx := idx/batchSize + 1
+		// delayMinute := time.Duration(batchIdx)
 
 		_, err := publisher.Enqueue(t,
 			asynq.TaskID(taskId),
-			asynq.ProcessIn(delayMinute*time.Minute),
+			asynq.Queue(conf.Asynq.AUDIO_QUEUE_NAME),
+			// asynq.ProcessIn(delayMinute*time.Minute),
+			asynq.ProcessIn(10*time.Second),
 			asynq.MaxRetry(2),
 			asynq.Timeout(90*time.Second))
 

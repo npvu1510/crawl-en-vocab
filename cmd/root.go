@@ -29,9 +29,10 @@ func Execute() {
 
 		// Publisher
 		publisher.VocabImagePublisherCmd,
+		publisher.VocabAudioPublisherCmd,
 
 		// Cónumer
-		consumer.VocabImageConsumerCmd,
+		consumer.ConsumerCmd,
 
 		// Others
 		ClearTasksCmd,

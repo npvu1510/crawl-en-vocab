@@ -14,6 +14,17 @@ type Config struct {
 		LOCAL_AUDIO_PATH string `env:"LOCAL_AUDIO_PATH"`
 	}
 
+	TTS struct {
+		CREDENTIALS_FILE_PATH string `env:"TTS_CREDENTIALS_FILE_PATH"`
+	}
+
+	GCS struct {
+		CREDENTIALS_FILE_PATH string `env:"GCS_CREDENTIALS_FILE_PATH"`
+		BUCKET_NAME           string `env:"GCS_BUCKET_NAME"`
+		AUDIO_PATH            string `env:"GCS_AUDIO_PATH"`
+		IMAGE_PATH            string `env:"GCS_IMAGE_PATH"`
+	}
+
 	Emoji_Flashcard struct {
 		CRAWLING_URL                   string `env:"EMOJI_FLASHCARD_CRAWLING_URL"`
 		DITCTIONARY_INSERT_BATCH_SIZE  int    `env:"EMOJI_FLASHCARD_DITCTIONARY_INSERT_BATCH_SIZE" envDefault:"10"`
@@ -31,6 +42,11 @@ type Config struct {
 
 	Redis struct {
 		Address string `env:"REDIS_ADDRESS" envDefault:"127.0.0.1:6379"`
+	}
+
+	Asynq struct {
+		IMAGE_QUEUE_NAME string `env:"ASYNQ_IMAGE_QUEUE_NAME"`
+		AUDIO_QUEUE_NAME string `env:"ASYNQ_AUDIO_QUEUE_NAME"`
 	}
 }
 
