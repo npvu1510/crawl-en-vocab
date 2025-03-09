@@ -25,12 +25,13 @@ type Config struct {
 		IMAGE_PATH            string `env:"GCS_IMAGE_PATH"`
 	}
 
-	Emoji_Flashcard struct {
-		CRAWLING_URL                   string `env:"EMOJI_FLASHCARD_CRAWLING_URL"`
-		DITCTIONARY_INSERT_BATCH_SIZE  int    `env:"EMOJI_FLASHCARD_DITCTIONARY_INSERT_BATCH_SIZE" envDefault:"10"`
-		DITCTIONARY_PUBLISH_BATCH_SIZE int    `env:"EMOJI_FLASHCARD_DITCTIONARY_PUBLISH_BATCH_SIZE" envDefault:"5"`
-		WORKER_NUM                     int    `env:"EMOJI_FLASHCARD_WORKER_NUM" envDefault:"10"`
-		SOURCE                         string `env:"EMOJI_FLASHCARD_SRC" envDefault:"EMOJI_FLASHCARD_SRC"`
+	EmojiFlashcard struct {
+		CRAWLING_URL                     string `env:"EMOJI_FLASHCARD_CRAWLING_URL"`
+		DITCTIONARY_INSERT_BATCH_SIZE    int    `env:"EMOJI_FLASHCARD_DITCTIONARY_INSERT_BATCH_SIZE" envDefault:"10"`
+		DITCTIONARY_PUBLISH_BATCH_SIZE   int    `env:"EMOJI_FLASHCARD_DITCTIONARY_PUBLISH_BATCH_SIZE" envDefault:"5"`
+		DITCTIONARY_PUBLISH_LIMIT_RECORD int    `env:"EMOJI_FLASHCARD_DITCTIONARY_PUBLISH_LIMIT_RECORD" envDefault:"10"`
+		WORKER_NUM                       int    `env:"EMOJI_FLASHCARD_WORKER_NUM" envDefault:"10"`
+		SOURCE                           string `env:"EMOJI_FLASHCARD_SRC" envDefault:"EMOJI_FLASHCARD_SRC"`
 	}
 	Postgres struct {
 		Host     string `env:"POSTGRES_HOST" envDefault:"localhost"`
@@ -45,6 +46,9 @@ type Config struct {
 	}
 
 	Asynq struct {
+		IMAGE_CONSUMER_ARGUMENT string `env:"ASYNQ_IMAGE_CONSUMER_ARGUMENT"`
+		AUDIO_CONSUMER_ARGUMENT string `env:"ASYNQ_AUDIO_CONSUMER_ARGUMENT"`
+
 		IMAGE_QUEUE_NAME string `env:"ASYNQ_IMAGE_QUEUE_NAME"`
 		AUDIO_QUEUE_NAME string `env:"ASYNQ_AUDIO_QUEUE_NAME"`
 	}

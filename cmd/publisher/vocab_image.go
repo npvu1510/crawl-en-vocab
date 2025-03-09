@@ -27,14 +27,19 @@ const (
 )
 
 var VocabImagePublisherCmd = &cobra.Command{
-	Use:   "vocab-image-pub",
-	Short: "vocab-image-pub",
+	Use:   "vocab-img-pub",
+	Short: "",
+	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		internal.Invoke(vocabImagePublisherCmd).Run()
+		queueNameArg := args[0]
+
+		internal.Invoke(func(lc fx.Lifecycle, conf *config.Config, dictionaryService service.IDictionaryService) {
+			vocabImagePublisherCmd(lc, conf, dictionaryService, queueNameArg)
+		}).Run()
 	},
 }
 
-func vocabImagePublisherCmd(lc fx.Lifecycle, conf *config.Config, dictionaryService service.IDictionaryService) {
+func vocabImagePublisherCmd(lc fx.Lifecycle, conf *config.Config, dictionaryService service.IDictionaryService, queueName string) {
 	fmt.Println("✅ Cron job vocab-image initializing...")
 	c := cron.New(cron.WithSeconds())
 
@@ -42,7 +47,7 @@ func vocabImagePublisherCmd(lc fx.Lifecycle, conf *config.Config, dictionaryServ
 		OnStart: func(ctx context.Context) error {
 			fmt.Println("✅ Cron job vocab-image started")
 			_, err := c.AddFunc("*/15 * * * * *", func() {
-				err := scanVocabImageDb(conf, dictionaryService)
+				err := scanVocabImageDb(conf, dictionaryService, queueName)
 				utils.CheckError(err)
 			})
 			utils.CheckError(err)
@@ -58,8 +63,9 @@ func vocabImagePublisherCmd(lc fx.Lifecycle, conf *config.Config, dictionaryServ
 	})
 }
 
-func scanVocabImageDb(conf *config.Config, dictionaryService service.IDictionaryService) error {
-	dictionaries, err := dictionaryService.GetDictionaries("", true, false, 1, 9)
+func scanVocabImageDb(conf *config.Config, dictionaryService service.IDictionaryService, queueName string) error {
+	limitRecord := conf.EmojiFlashcard.DITCTIONARY_PUBLISH_LIMIT_RECORD
+	dictionaries, err := dictionaryService.GetDictionaries("", true, false, 1, limitRecord)
 	utils.CheckError(err)
 
 	// fmt.Printf("Size: %v\n", len(dictionaries))
@@ -95,7 +101,7 @@ func scanVocabImageDb(conf *config.Config, dictionaryService service.IDictionary
 
 		_, err := publisher.Enqueue(t,
 			asynq.TaskID(taskId),
-			asynq.Queue(conf.Asynq.IMAGE_QUEUE_NAME),
+			asynq.Queue(queueName),
 			// asynq.ProcessIn(delayMinute*time.Minute),
 			asynq.ProcessIn(10*time.Second),
 			asynq.MaxRetry(2),
